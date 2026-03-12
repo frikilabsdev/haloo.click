@@ -95,6 +95,20 @@ export function CheckoutClient({ tenant }: Props) {
     ].filter(Boolean);
     return parts.length > 0 ? parts.join(", ") : undefined;
   }, [tenant.address, tenant.city?.name, tenant.state?.name]);
+  const mapInitialCenter = useMemo<[number, number] | undefined>(() => {
+    const citySlug = tenant.city?.slug?.toLowerCase() ?? "";
+    const cityName = tenant.city?.name?.toLowerCase() ?? "";
+    const isJuchitan =
+      citySlug === "juchitan-de-zaragoza" ||
+      cityName.includes("juchit");
+
+    if (isJuchitan) {
+      // Carretera Transístmica, La Riviera, Juchitán (coordenada validada en OSM/Nominatim).
+      return [16.4454972, -95.0262592];
+    }
+
+    return undefined;
+  }, [tenant.city?.name, tenant.city?.slug]);
 
   // zone.cost es Decimal de Prisma — tras JSON.stringify/parse llega como string o number
   const deliveryCost = deliveryType === "PICKUP" ? 0
@@ -436,7 +450,11 @@ export function CheckoutClient({ tenant }: Props) {
               {/* ── Por mapa ── */}
               {useMapDelivery && (
                 <>
-                  <MapPicker onPick={handleMapPick} initialQuery={mapInitialQuery} />
+                  <MapPicker
+                    onPick={handleMapPick}
+                    initialQuery={mapInitialQuery}
+                    initialCenter={mapInitialCenter}
+                  />
                   <Field label="Confirma tu dirección" required>
                     <input
                       type="text" value={address} onChange={e => setAddress(e.target.value)}

@@ -36,6 +36,7 @@ export interface PickResult {
 interface Props {
   onPick: (r: PickResult) => void;
   initialQuery?: string;
+  initialCenter?: [number, number];
 }
 
 // ── Coordenadas por defecto: CDMX ─────────────────────────────────────────────
@@ -82,7 +83,7 @@ function DraggableMarker({
 
 // ── Componente principal ───────────────────────────────────────────────────────
 
-export function MapPicker({ onPick, initialQuery }: Props) {
+export function MapPicker({ onPick, initialQuery, initialCenter }: Props) {
   const [pos,          setPos]          = useState<[number, number]>(DEFAULT_CENTER);
   const [flyTarget,    setFlyTarget]    = useState<[number, number] | null>(null);
   const [geocoding,    setGeocoding]    = useState(false);
@@ -122,8 +123,18 @@ export function MapPicker({ onPick, initialQuery }: Props) {
     }
   }, [onPick]);
 
+  // ── Centro inicial explícito (override) ───────────────────────────────────
+  useEffect(() => {
+    if (!initialCenter) return;
+    const [lat, lng] = initialCenter;
+    setPos([lat, lng]);
+    setFlyTarget([lat, lng]);
+    reverseGeocode(lat, lng);
+  }, [initialCenter, reverseGeocode]);
+
   // ── Centrar mapa inicialmente cerca del restaurante (si hay ubicación) ─────
   useEffect(() => {
+    if (initialCenter) return;
     const query = initialQuery?.trim();
     if (!query) return;
 
@@ -181,7 +192,7 @@ export function MapPicker({ onPick, initialQuery }: Props) {
 
     resolveInitialCenter();
     return () => { cancelled = true; };
-  }, [initialQuery, reverseGeocode]);
+  }, [initialCenter, initialQuery, reverseGeocode]);
 
   // ── Mover marcador ────────────────────────────────────────────────────────
 
