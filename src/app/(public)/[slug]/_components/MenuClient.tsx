@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { TenantWithRelations, CategoryWithProducts, ProductWithOptions } from "@/types";
 import { useCartStore } from "@/lib/cart-store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, normalizeCustomizationLabel } from "@/lib/utils";
 import { ProductModal } from "./ProductModal";
 import { CartDrawer } from "./CartDrawer";
 
@@ -204,7 +204,7 @@ export function MenuClient({ tenant, categories }: Props) {
                 onClick={() => scrollTo(cat.id)}
                 className={`menu-cat-chip${activeCategory === cat.id ? " active" : ""}`}
               >
-                {cat.name}
+                {normalizeCustomizationLabel(cat.name)}
               </button>
             ))}
           </div>
@@ -316,7 +316,7 @@ export function MenuClient({ tenant, categories }: Props) {
                   fontFamily: "var(--font-nunito)", fontWeight: 900, fontSize: 19,
                   color: "var(--menu-primary)", margin: 0, letterSpacing: "-0.02em",
                 }}>
-                  {cat.name}
+                  {normalizeCustomizationLabel(cat.name)}
                 </h2>
                 <span style={{ fontFamily: "var(--font-nunito)", fontSize: 12, fontWeight: 700, color: "var(--menu-muted)" }}>
                   {cat.products.length} {cat.products.length === 1 ? "producto" : "productos"}

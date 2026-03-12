@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { ProductWithOptions, OptionGroupWithOptions, SelectedOption, SuggestedProduct } from "@/types";
 import { useCartStore } from "@/lib/cart-store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, normalizeCustomizationLabel } from "@/lib/utils";
 
 interface Props {
   product: ProductWithOptions;
@@ -109,7 +109,7 @@ export function ProductModal({ product, onClose }: Props) {
           .filter(o => (selections[g.id] ?? []).includes(o.id))
           .map(o => ({
             optionGroupId:   g.id,
-            optionGroupName: g.name,
+            optionGroupName: normalizeCustomizationLabel(g.name),
             optionId:        o.id,
             optionName:      o.name,
             // isVariant price is captured in unitPrice → store 0 to avoid double-counting
@@ -444,11 +444,11 @@ function OptionGroupSection({ group, selected, onToggle }: {
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
         <div>
           <h3 style={{ fontFamily: "var(--font-nunito)", fontWeight: 700, fontSize: 15, color: "var(--menu-primary)", margin: "0 0 2px" }}>
-            {group.name}
+            {normalizeCustomizationLabel(group.name)}
           </h3>
           {group.description && (
             <p style={{ fontFamily: "var(--font-nunito)", fontSize: 12, color: "var(--menu-muted)", margin: 0, lineHeight: 1.4 }}>
-              {group.description}
+              {normalizeCustomizationLabel(group.description)}
             </p>
           )}
           <p style={{ fontFamily: "var(--font-nunito)", fontSize: 11, color: "var(--menu-muted)", margin: "2px 0 0" }}>

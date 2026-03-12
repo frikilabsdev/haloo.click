@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import { normalizeCustomizationLabel } from "@/lib/utils";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -182,7 +183,7 @@ export function MenuManager({ initialCategories, tenantSlug }: Props) {
   // ── Handlers de categoría ─────────────────────────────────────────────────
 
   const handleDeleteCategory = async (cat: CategoryRow) => {
-    if (!window.confirm(`¿Eliminar la categoría "${cat.name}"? También se eliminarán sus productos.`)) return;
+    if (!window.confirm(`¿Eliminar la categoría "${normalizeCustomizationLabel(cat.name)}"? También se eliminarán sus productos.`)) return;
     const res = await apiFetch(`/api/menu/categories/${cat.id}`, { method: "DELETE" });
     if (res.error) { alert(res.error); return; }
     await reload();
@@ -399,7 +400,7 @@ function CategoryCard({
           </span>
           <div>
             <span style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: 14, color: "var(--dash-text)" }}>
-              {cat.name}
+              {normalizeCustomizationLabel(cat.name)}
             </span>
             <span style={{ fontFamily: "var(--font-dm)", fontSize: 12, color: "var(--dash-muted)", marginLeft: 8 }}>
               ({cat.products.length} producto{cat.products.length !== 1 ? "s" : ""})
@@ -1358,7 +1359,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
                             textOverflow: "ellipsis",
                             maxWidth: 180,
                           }}>
-                            {group.name}
+                            {normalizeCustomizationLabel(group.name)}
                           </span>
                           {group.internalName && (
                             <span style={{

@@ -14,6 +14,18 @@ export function formatCurrency(amount: number | string): string {
 }
 
 /**
+ * Alias visual para la migración de "complementos" a "personalizaciones".
+ * No modifica datos ni contratos API; solo texto mostrado en UI.
+ */
+export function normalizeCustomizationLabel(text: string): string {
+  return text
+    .replace(/\bComplementos\b/g, "Personalizaciones")
+    .replace(/\bcomplementos\b/g, "personalizaciones")
+    .replace(/\bComplemento\b/g, "Personalización")
+    .replace(/\bcomplemento\b/g, "personalización");
+}
+
+/**
  * Convierte cualquier texto en un slug válido para URL.
  * Reglas: solo a-z, 0-9 y guión. Sin espacios, puntos, acentos,
  * caracteres especiales, guiones dobles ni guiones al inicio/fin.

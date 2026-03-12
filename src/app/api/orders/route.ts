@@ -286,6 +286,8 @@ export async function POST(request: NextRequest) {
         data: {
           tenantId:         tenant.id,
           orderNumber:      generateOrderNumber(),
+          // Evita depender del default en DB (drift entre entornos/migraciones).
+          trackingToken:    crypto.randomUUID(),
           customerName,
           customerPhone,
           customerWhatsapp: customerWhatsapp ?? customerPhone,
