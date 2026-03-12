@@ -90,15 +90,20 @@ body {
 
 /* Logo del restaurante — centrado en móvil */
 .menu-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 18px;
+  width: 88px;
+  height: 88px;
+  border-radius: 22px;
   background: var(--menu-card);
   border: 3px solid var(--menu-card);
   box-shadow: 0 4px 20px rgba(0,0,0,0.18);
   overflow: hidden;
-  margin-top: -36px;
+  margin-top: -44px;
   margin-bottom: 12px;
+}
+@media (min-width: 768px) {
+  .menu-logo {
+    margin-left: 12px;
+  }
 }
 @media (max-width: 767px) {
   .menu-logo {

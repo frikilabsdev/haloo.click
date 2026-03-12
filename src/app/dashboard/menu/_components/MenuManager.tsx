@@ -715,7 +715,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
   const [isAvailable, setIsAvailable] = useState(true);
   const [imageUrl, setImageUrl]       = useState("");
 
-  // Grupos de opciones (estado local para edición inline)
+  // Personalizaciones asignadas al producto
   const [groups, setGroups] = useState<GroupData[]>([]);
 
   // Variantes (solo en create)
@@ -735,12 +735,12 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
   const [addingVariant, setAddingVariant] = useState(false);
   const [variantError, setVariantError] = useState("");
 
-  // Nuevo grupo inline (solo en edit)
+  // Crear nueva personalización desde el modal (solo edit)
   const [newGroupName, setNewGroupName] = useState("");
   const [addingGroup, setAddingGroup]   = useState(false);
   const [groupError, setGroupError]     = useState("");
 
-  // Selector de complementos existentes
+  // Selector de personalizaciones existentes
   const [showGroupPicker, setShowGroupPicker]   = useState(false);
   const [allGroups, setAllGroups]               = useState<GroupData[]>([]);
   const [loadingAllGroups, setLoadingAllGroups] = useState(false);
@@ -752,10 +752,6 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
   const [showSuggestionPicker, setShowSuggestionPicker] = useState(false);
   const [suggestionSearch, setSuggestionSearch]     = useState("");
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-
-  // Estado de nueva opción por grupo
-  const [newOptionByGroup, setNewOptionByGroup] = useState<Record<string, string>>({});
-  const [addingOptionFor, setAddingOptionFor]   = useState<string | null>(null);
 
   // Cargar producto al abrir en modo edit
   useState(() => {
@@ -891,7 +887,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
   // ── Gestión de grupos ─────────────────────────────────────────────────────
 
   const handleAddGroup = async () => {
-    if (!newGroupName.trim()) { setGroupError("El nombre del complemento es requerido."); return; }
+    if (!newGroupName.trim()) { setGroupError("El nombre de la personalización es requerido."); return; }
     if (!productId) { setGroupError("Guarda el producto primero."); return; }
     setGroupError("");
     setAddingGroup(true);
@@ -940,7 +936,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
   };
 
   const handleDeleteGroup = async (groupId: string) => {
-    if (!window.confirm("¿Quitar este complemento del producto?\n\nEl complemento seguirá en la biblioteca y disponible para otros productos.")) return;
+    if (!window.confirm("¿Quitar esta personalización del producto?\n\nSeguirá en la biblioteca y disponible para otros productos.")) return;
     const res = await apiFetch(`/api/menu/complements/${productId}?groupId=${groupId}`, { method: "DELETE" });
     if (res.error) { alert(res.error); return; }
     setGroups(prev => prev.filter(g => g.id !== groupId));
@@ -968,21 +964,6 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
     const res = await apiFetch(`/api/menu/products/${productId}/suggestions?suggestionId=${suggestionId}`, { method: "DELETE" });
     if (res.error) { alert(res.error); return; }
     setSuggestions(prev => prev.filter(s => s.id !== suggestionId));
-  };
-
-  const handlePatchGroup = async (
-    groupId: string,
-    field: "required" | "multiple",
-    value: boolean
-  ) => {
-    const res = await apiFetch<GroupData>(`/api/menu/groups/${groupId}`, {
-      method: "PATCH",
-      body: JSON.stringify({ [field]: value }),
-    });
-    if (res.error) { alert(res.error); return; }
-    if (res.data) {
-      setGroups(prev => prev.map(g => g.id === groupId ? res.data! : g));
-    }
   };
 
   // ── Gestión de variantes (edit mode) ─────────────────────────────────────
@@ -1027,52 +1008,6 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
     if (!window.confirm("¿Eliminar esta variante?")) return;
     const res = await apiFetch(`/api/menu/variants/${variantId}`, { method: "DELETE" });
     if (!res.error) setVariants(prev => prev.filter(v => v.id !== variantId));
-  };
-
-  // ── Gestión de opciones ───────────────────────────────────────────────────
-
-  const handleAddOption = async (groupId: string) => {
-    const optionName = (newOptionByGroup[groupId] ?? "").trim();
-    if (!optionName) return;
-    setAddingOptionFor(groupId);
-
-    const res = await apiFetch<OptionData>("/api/menu/options", {
-      method: "POST",
-      body: JSON.stringify({ groupId, name: optionName }),
-    });
-
-    setAddingOptionFor(null);
-    if (res.error) { alert(res.error); return; }
-    if (res.data) {
-      setGroups(prev => prev.map(g =>
-        g.id === groupId ? { ...g, options: [...g.options, res.data!] } : g
-      ));
-      setNewOptionByGroup(prev => ({ ...prev, [groupId]: "" }));
-    }
-  };
-
-  const handleDeleteOption = async (groupId: string, optionId: string) => {
-    if (!window.confirm("¿Eliminar esta opción?")) return;
-    const res = await apiFetch(`/api/menu/options/${optionId}`, { method: "DELETE" });
-    if (res.error) { alert(res.error); return; }
-    setGroups(prev => prev.map(g =>
-      g.id === groupId ? { ...g, options: g.options.filter(o => o.id !== optionId) } : g
-    ));
-  };
-
-  const handleToggleOptionAvailable = async (groupId: string, option: OptionData) => {
-    const res = await apiFetch<OptionData>(`/api/menu/options/${option.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({ isAvailable: !option.isAvailable }),
-    });
-    if (res.error) { alert(res.error); return; }
-    if (res.data) {
-      setGroups(prev => prev.map(g =>
-        g.id === groupId
-          ? { ...g, options: g.options.map(o => o.id === option.id ? res.data! : o) }
-          : g
-      ));
-    }
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -1375,45 +1310,104 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
             </div>
           )}
 
-          {/* ── Complementos (solo en modo edit) ─── */}
+          {/* ── Personalizaciones (solo en modo edit) ─── */}
           {mode === "edit" && product && (
             <div>
               <div style={{ borderTop: "1px solid var(--dash-border)", paddingTop: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <SectionTitle>Complementos</SectionTitle>
+                  <SectionTitle>Personalizaciones</SectionTitle>
                   <Link
                     href="/dashboard/menu/complements"
                     target="_blank"
                     style={{ fontSize: 12, color: "var(--dash-orange)", textDecoration: "none", fontFamily: "var(--font-dm)" }}
                   >
-                    Abrir biblioteca →
+                    Gestionar biblioteca →
                   </Link>
                 </div>
 
                 {groups.length === 0 && (
                   <p style={{ fontFamily: "var(--font-dm)", fontSize: 13, color: "var(--dash-muted)", margin: "0 0 12px" }}>
-                    Sin complementos. Agrega uno de la biblioteca o crea uno nuevo.
+                    Sin personalizaciones. Agrega una desde biblioteca o crea una nueva.
                   </p>
                 )}
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {groups.map(group => (
-                    <GroupEditor
-                      key={group.id}
-                      group={group}
-                      newOptionName={newOptionByGroup[group.id] ?? ""}
-                      onNewOptionNameChange={val => setNewOptionByGroup(prev => ({ ...prev, [group.id]: val }))}
-                      addingOption={addingOptionFor === group.id}
-                      onAddOption={() => handleAddOption(group.id)}
-                      onDeleteOption={(optId) => handleDeleteOption(group.id, optId)}
-                      onToggleOption={(opt) => handleToggleOptionAvailable(group.id, opt)}
-                      onDeleteGroup={() => handleDeleteGroup(group.id)}
-                      onPatchGroup={(field, value) => handlePatchGroup(group.id, field, value)}
-                    />
-                  ))}
-                </div>
+                {groups.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {groups.map(group => (
+                      <div
+                        key={group.id}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          maxWidth: "100%",
+                          padding: "7px 10px",
+                          borderRadius: 999,
+                          border: "1px solid var(--dash-border)",
+                          background: "var(--dash-canvas)",
+                        }}
+                      >
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                          <span style={{
+                            fontFamily: "var(--font-dm)",
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: "var(--dash-text)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            maxWidth: 180,
+                          }}>
+                            {group.name}
+                          </span>
+                          {group.internalName && (
+                            <span style={{
+                              fontFamily: "var(--font-dm)",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              padding: "1px 6px",
+                              borderRadius: 6,
+                              background: "#EDE9FE",
+                              color: "#5B21B6",
+                              whiteSpace: "nowrap",
+                            }}>
+                              {group.internalName}
+                            </span>
+                          )}
+                          <span style={{
+                            fontFamily: "var(--font-dm)",
+                            fontSize: 11,
+                            color: "var(--dash-muted)",
+                            whiteSpace: "nowrap",
+                          }}>
+                            {group.options.length} opc.
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteGroup(group.id)}
+                          title="Quitar del producto"
+                          style={{
+                            width: 18, height: 18, borderRadius: "50%",
+                            border: "none", background: "var(--dash-red-soft)",
+                            color: "var(--dash-red)", cursor: "pointer",
+                            fontSize: 12, lineHeight: 1,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                {/* ── Acciones: agregar complemento ─── */}
+                <p style={{ fontFamily: "var(--font-dm)", fontSize: 12, color: "var(--dash-muted)", margin: "10px 0 0" }}>
+                  Para editar opciones o reglas de una personalización, usa la biblioteca.
+                </p>
+
+                {/* ── Acciones: agregar personalización ─── */}
                 <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
 
                   {/* Botón para seleccionar de la biblioteca */}
@@ -1429,7 +1423,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
                       color: "var(--dash-orange)", cursor: loadingAllGroups ? "wait" : "pointer",
                     }}
                   >
-                    {loadingAllGroups ? "Cargando…" : "+ Agregar complemento de la biblioteca"}
+                    {loadingAllGroups ? "Cargando…" : "+ Agregar personalización de la biblioteca"}
                   </button>
 
                   {/* Crear nuevo directamente */}
@@ -1443,7 +1437,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
                         value={newGroupName}
                         onChange={e => setNewGroupName(e.target.value)}
                         onKeyDown={e => e.key === "Enter" && (e.preventDefault(), handleAddGroup())}
-                        placeholder="Nombre del complemento (ej: Salsas, Extras…)"
+                        placeholder="Nombre de la personalización (ej: Salsas, Extras…)"
                         style={{ ...inputStyle, flex: 1 }}
                         maxLength={80}
                       />
@@ -1465,7 +1459,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
 
           {mode === "create" && (
             <p style={{ fontFamily: "var(--font-dm)", fontSize: 12, color: "var(--dash-muted)", margin: 0, borderTop: "1px solid var(--dash-border)", paddingTop: 12 }}>
-              Podrás agregar complementos (sabores, extras, tamaños) después de crear el producto.
+              Podrás agregar personalizaciones (sabores, extras, tamaños) después de crear el producto.
             </p>
           )}
 
@@ -1603,7 +1597,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
             </div>
           )}
 
-          {/* ── Picker de complementos existentes ─── */}
+          {/* ── Picker de personalizaciones existentes ─── */}
           {showGroupPicker && (
             <div
               onClick={() => setShowGroupPicker(false)}
@@ -1611,13 +1605,13 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
             >
               <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 24, width: "100%", maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
                 <h3 style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: 16, color: "var(--dash-text)", margin: "0 0 14px" }}>
-                  Agregar complemento
+                  Agregar personalización
                 </h3>
                 <input
                   autoFocus
                   value={pickerSearch}
                   onChange={e => setPickerSearch(e.target.value)}
-                  placeholder="Buscar complemento..."
+                  placeholder="Buscar personalización..."
                   style={{ ...inputStyle, marginBottom: 12 }}
                 />
                 <div style={{ overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1653,7 +1647,7 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
                     ))}
                   {allGroups.filter(g => (g.name.toLowerCase().includes(pickerSearch.toLowerCase()) || (g.internalName ?? "").toLowerCase().includes(pickerSearch.toLowerCase())) && !groups.find(ag => ag.id === g.id)).length === 0 && (
                     <p style={{ fontSize: 13, color: "var(--dash-muted)", textAlign: "center", padding: "20px 0" }}>
-                      {pickerSearch ? "Sin resultados" : "Todos los complementos ya están asignados"}
+                      {pickerSearch ? "Sin resultados" : "Todas las personalizaciones ya están asignadas"}
                     </p>
                   )}
                 </div>
@@ -1666,132 +1660,6 @@ function ProductModal({ mode, categoryId, productId, categories, onClose, onSave
         </div>
       )}
     </Modal>
-  );
-}
-
-// ── GroupEditor ────────────────────────────────────────────────────────────────
-
-interface GroupEditorProps {
-  group:               GroupData;
-  newOptionName:       string;
-  onNewOptionNameChange: (val: string) => void;
-  addingOption:        boolean;
-  onAddOption:         () => void;
-  onDeleteOption:      (optId: string) => void;
-  onToggleOption:      (opt: OptionData) => void;
-  onDeleteGroup:       () => void;
-  onPatchGroup:        (field: "required" | "multiple", value: boolean) => void;
-}
-
-function GroupEditor({
-  group, newOptionName, onNewOptionNameChange, addingOption,
-  onAddOption, onDeleteOption, onToggleOption, onDeleteGroup, onPatchGroup,
-}: GroupEditorProps) {
-  return (
-    <div style={{
-      border: "1px solid var(--dash-border)",
-      borderRadius: 10, overflow: "hidden",
-    }}>
-      {/* Cabecera del grupo */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10,
-        padding: "10px 14px",
-        background: "var(--dash-canvas)",
-        borderBottom: "1px solid var(--dash-border)",
-      }}>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontFamily: "var(--font-dm)", fontWeight: 600, fontSize: 13, color: "var(--dash-text)" }}>
-            {group.name}
-          </span>
-        </div>
-        <label style={{ display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontFamily: "var(--font-dm)", fontSize: 11, color: "var(--dash-muted)" }}>
-          <input
-            type="checkbox"
-            checked={group.required}
-            onChange={e => onPatchGroup("required", e.target.checked)}
-            style={{ accentColor: "var(--dash-orange)" }}
-          />
-          Requerido
-        </label>
-        <label style={{ display: "flex", alignItems: "center", gap: 5, cursor: "pointer", fontFamily: "var(--font-dm)", fontSize: 11, color: "var(--dash-muted)" }}>
-          <input
-            type="checkbox"
-            checked={group.multiple}
-            onChange={e => onPatchGroup("multiple", e.target.checked)}
-            style={{ accentColor: "var(--dash-orange)" }}
-          />
-          Múltiple
-        </label>
-        <button
-          onClick={onDeleteGroup}
-          title="Eliminar grupo"
-          style={{ ...iconBtnStyle, color: "var(--dash-red)" }}
-        >
-          <IconTrash size={13} />
-        </button>
-      </div>
-
-      {/* Opciones */}
-      <div style={{ padding: "8px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
-        {group.options.length === 0 && (
-          <p style={{ fontFamily: "var(--font-dm)", fontSize: 12, color: "var(--dash-muted)", margin: "2px 0 4px" }}>
-            Sin opciones aún.
-          </p>
-        )}
-
-        {group.options.map(opt => (
-          <div key={opt.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: "var(--font-dm)", fontSize: 13, color: "var(--dash-text)", flex: 1 }}>
-              {opt.name}
-              {parseFloat(opt.price) > 0 && (
-                <span style={{ color: "var(--dash-muted)", marginLeft: 6, fontWeight: 400 }}>
-                  +{formatPrice(opt.price)}
-                </span>
-              )}
-            </span>
-            <ToggleBadge
-              label={opt.isAvailable ? "Disponible" : "No disp."}
-              active={opt.isAvailable}
-              loading={false}
-              onClick={() => onToggleOption(opt)}
-              colorOff="var(--dash-amber)"
-              softOff="var(--dash-amber-soft)"
-            />
-            <button
-              onClick={() => onDeleteOption(opt.id)}
-              title="Eliminar opción"
-              style={{ ...iconBtnStyle, color: "var(--dash-red)", padding: "4px" }}
-            >
-              <IconTrash size={12} />
-            </button>
-          </div>
-        ))}
-
-        {/* Agregar opción inline */}
-        <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-          <input
-            type="text"
-            value={newOptionName}
-            onChange={e => onNewOptionNameChange(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && (e.preventDefault(), onAddOption())}
-            placeholder="Nueva opción…"
-            style={{ ...inputStyle, fontSize: 12, padding: "6px 10px", flex: 1 }}
-            maxLength={80}
-          />
-          <button
-            type="button"
-            onClick={onAddOption}
-            disabled={addingOption || !newOptionName.trim()}
-            style={{
-              ...btnPrimaryStyle(addingOption || !newOptionName.trim()),
-              padding: "6px 12px", fontSize: 12,
-            }}
-          >
-            {addingOption ? "…" : "+ Opción"}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
 
