@@ -207,6 +207,12 @@ body {
   color: var(--menu-primary);
 }
 
+.menu-no-horizontal {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+  touch-action: pan-y;
+}
+
 /* Animaciones del menú */
 @keyframes menuFadeUp {
   from { opacity: 0; transform: translateY(12px); }

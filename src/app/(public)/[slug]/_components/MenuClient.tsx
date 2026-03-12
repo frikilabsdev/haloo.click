@@ -77,7 +77,7 @@ export function MenuClient({ tenant, categories }: Props) {
   const isClosed = isOpen === false;
 
   return (
-    <div style={{ background: "var(--menu-bg)", minHeight: "100vh", fontFamily: "var(--font-nunito)" }}>
+    <div className="menu-no-horizontal" style={{ background: "var(--menu-bg)", minHeight: "100vh", fontFamily: "var(--font-nunito)" }}>
 
       {/* ── HERO ── */}
       <div style={{ background: "var(--menu-card)", paddingBottom: 0 }}>
@@ -177,24 +177,15 @@ export function MenuClient({ tenant, categories }: Props) {
         borderBottom: "1px solid var(--menu-border)",
         boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
       }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
-          {/* Fade izquierdo */}
-          <div style={{
-            position: "absolute", left: 0, top: 0, bottom: 0, width: 32, zIndex: 1,
-            background: "linear-gradient(to right, #ffffff 0%, rgba(255,255,255,0) 100%)",
-            pointerEvents: "none",
-          }} />
-          {/* Fade derecho */}
-          <div style={{
-            position: "absolute", right: 0, top: 0, bottom: 0, width: 32, zIndex: 1,
-            background: "linear-gradient(to left, #ffffff 0%, rgba(255,255,255,0) 100%)",
-            pointerEvents: "none",
-          }} />
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div
             ref={chipScrollRef}
             style={{
-              overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none",
-              display: "flex", padding: "0 16px", gap: 4, alignItems: "flex-end",
+              display: "flex",
+              flexWrap: "wrap",
+              padding: "0 16px",
+              gap: 4,
+              alignItems: "flex-end",
             }}
           >
             {categories.map(cat => (
