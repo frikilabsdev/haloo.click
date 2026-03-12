@@ -7,7 +7,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+  // Preferir la conexión directa (sin pgbouncer) cuando Neon la expone via DATABASE_URL_UNPOOLED
+  const connectionString = process.env.DATABASE_URL_UNPOOLED ?? env.DATABASE_URL;
+  const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
