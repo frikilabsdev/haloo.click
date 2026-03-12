@@ -17,7 +17,7 @@ const NAV = [
   { href: "/dashboard",                    label: "Resumen",        icon: IconGrid        },
   { href: "/dashboard/pedidos",            label: "Pedidos",        icon: IconOrders      },
   { href: "/dashboard/menu",               label: "Menú",           icon: IconMenu        },
-  { href: "/dashboard/menu/complements",   label: "Complementos",   icon: IconComplement  },
+  { href: "/dashboard/menu/complements",   label: "Personalizaciones", icon: IconComplement  },
   { href: "/dashboard/configuracion",      label: "Configuración",  icon: IconSettings    },
 ];
 

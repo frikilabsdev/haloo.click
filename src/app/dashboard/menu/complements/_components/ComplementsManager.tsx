@@ -173,7 +173,7 @@ export function ComplementsManager({ initialGroups }: Props) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
           <h1 style={{ fontFamily: "var(--font-syne)", fontWeight: 800, fontSize: 22, color: "var(--dash-text)", margin: 0 }}>
-            Complementos
+            Personalizaciones
           </h1>
           <p style={{ fontSize: 13, color: "var(--dash-muted)", margin: "4px 0 0" }}>
             Grupos de opciones reutilizables entre productos
@@ -183,7 +183,7 @@ export function ComplementsManager({ initialGroups }: Props) {
           onClick={() => setShowNew(true)}
           style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", background: "var(--dash-orange)", border: "none", borderRadius: 10, color: "#fff", fontFamily: "var(--font-dm)", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
         >
-          + Nuevo complemento
+          + Nueva personalización
         </button>
       </div>
 
@@ -203,14 +203,14 @@ export function ComplementsManager({ initialGroups }: Props) {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar complemento..."
+              placeholder="Buscar personalización..."
               style={{ width: "100%", padding: "8px 12px", border: "1px solid var(--dash-border)", borderRadius: 8, fontFamily: "var(--font-dm)", fontSize: 13, color: "var(--dash-text)", background: "var(--dash-canvas)", outline: "none", boxSizing: "border-box" }}
             />
           </div>
 
           {filtered.length === 0 ? (
             <p style={{ padding: "20px 16px", fontSize: 13, color: "var(--dash-muted)", textAlign: "center" }}>
-              {search ? "Sin resultados" : "Aún no tienes complementos"}
+              {search ? "Sin resultados" : "Aún no tienes personalizaciones"}
             </p>
           ) : (
             <div style={{ maxHeight: 600, overflowY: "auto" }}>
@@ -276,13 +276,13 @@ export function ComplementsManager({ initialGroups }: Props) {
         ) : (
           <div style={{ background: "var(--dash-surface)", border: "1px solid var(--dash-border)", borderRadius: 12, padding: 48, textAlign: "center" }}>
             <p style={{ fontSize: 14, color: "var(--dash-muted)" }}>
-              Selecciona un complemento para editarlo
+              Selecciona una personalización para editarla
             </p>
           </div>
         )}
       </div>
 
-      {/* ── Modal nuevo complemento ───────────────────────────────── */}
+      {/* ── Modal nueva personalización ───────────────────────────────── */}
       {showNew && (
         <div
           onClick={() => setShowNew(false)}
@@ -293,7 +293,7 @@ export function ComplementsManager({ initialGroups }: Props) {
             style={{ background: "#fff", borderRadius: 16, padding: 28, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}
           >
             <h2 style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: 18, color: "var(--dash-text)", margin: "0 0 20px" }}>
-              Nuevo complemento
+              Nueva personalización
             </h2>
 
             <label style={labelStyle}>Nombre público *</label>
@@ -314,7 +314,7 @@ export function ComplementsManager({ initialGroups }: Props) {
               placeholder="ej. Salsas para alitas..."
               style={inputStyle}
             />
-            <p style={hintStyle}>Solo visible en el dashboard para diferenciar complementos con el mismo nombre.</p>
+            <p style={hintStyle}>Solo visible en el dashboard para diferenciar personalizaciones con el mismo nombre.</p>
 
             <label style={labelStyle}>Descripción (visible al cliente)</label>
             <textarea
@@ -362,7 +362,7 @@ export function ComplementsManager({ initialGroups }: Props) {
                 disabled={!newName.trim() || creating}
                 style={{ flex: 2, padding: "11px 0", border: "none", borderRadius: 10, background: !newName.trim() || creating ? "#ccc" : "var(--dash-orange)", color: "#fff", fontFamily: "var(--font-dm)", fontWeight: 700, fontSize: 14, cursor: !newName.trim() || creating ? "not-allowed" : "pointer" }}
               >
-                {creating ? "Creando..." : "Crear complemento"}
+                {creating ? "Creando..." : "Crear personalización"}
               </button>
             </div>
           </div>
@@ -506,7 +506,7 @@ function GroupEditor({
       {/* ── Card: identidad ──────────────────────────────────────── */}
       <div style={cardStyle}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <p style={{ ...sectionTitle, margin: 0 }}>Identidad del complemento</p>
+          <p style={{ ...sectionTitle, margin: 0 }}>Identidad de la personalización</p>
           <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={handleSave}
@@ -540,7 +540,7 @@ function GroupEditor({
           placeholder="ej. Salsas para alitas, Salsas para burger..."
           style={{ ...inputStyle, color: "#5B21B6" }}
         />
-        <p style={hintStyle}>Solo visible en el dashboard para diferenciar complementos con el mismo nombre público.</p>
+        <p style={hintStyle}>Solo visible en el dashboard para diferenciar personalizaciones con el mismo nombre público.</p>
 
         <label style={labelStyle}>Descripción (visible al cliente)</label>
         <textarea
@@ -683,7 +683,7 @@ function GroupEditor({
           <p style={sectionTitle}>Visibilidad condicional</p>
           <p style={{ fontSize: 12, color: "var(--dash-muted)", marginBottom: 10, lineHeight: 1.5 }}>
             Muestra este grupo solo cuando el cliente haya seleccionado una opción específica de otro grupo.
-            Útil para complementos que dependen de una elección previa (ej. "Tipo de cocción" solo aparece si eligió "Carne").
+            Útil para personalizaciones que dependen de una elección previa (ej. "Tipo de cocción" solo aparece si eligió "Carne").
           </p>
           <label style={labelStyle}>Solo visible si el cliente elige</label>
           <select
@@ -860,7 +860,7 @@ function GroupEditor({
       {products.length > 0 && (
         <div style={cardStyle}>
           <p style={sectionTitle}>
-            Productos que usan este complemento
+            Productos que usan esta personalización
             <span style={{ fontSize: 11, fontWeight: 400, color: "var(--dash-muted)", marginLeft: 8 }}>({products.length})</span>
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
