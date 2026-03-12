@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/session";
 import { getTenantByUserId } from "@/lib/tenant";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/utils";
+import type { OrderStatus } from "@prisma/client";
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -9,7 +10,7 @@ export default async function DashboardPage() {
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
-  const acceptedRevenueStatuses = ["CONFIRMED", "PREPARING", "READY", "DELIVERED"] as const;
+  const acceptedRevenueStatuses: OrderStatus[] = ["CONFIRMED", "PREPARING", "READY", "DELIVERED"];
 
   // Métricas del día + pedidos recientes en paralelo
   const [todayOrders, pendingOrders, recentOrders] = await Promise.all([
