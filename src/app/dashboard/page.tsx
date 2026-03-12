@@ -9,11 +9,16 @@ export default async function DashboardPage() {
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
+  const acceptedRevenueStatuses = ["CONFIRMED", "PREPARING", "READY", "DELIVERED"] as const;
 
   // Métricas del día + pedidos recientes en paralelo
   const [todayOrders, pendingOrders, recentOrders] = await Promise.all([
     prisma.order.findMany({
-      where: { tenantId: tenant.id, createdAt: { gte: todayStart } },
+      where: {
+        tenantId: tenant.id,
+        createdAt: { gte: todayStart },
+        status: { in: acceptedRevenueStatuses },
+      },
       select: { total: true, status: true },
     }),
     prisma.order.count({
@@ -93,7 +98,7 @@ export default async function DashboardPage() {
         <MetricCard
           label="Ingresos hoy"
           value={formatCurrency(todayRevenue)}
-          sub={`${todayCount} pedido${todayCount !== 1 ? "s" : ""}`}
+          sub={`${todayCount} pedido${todayCount !== 1 ? "s" : ""} aceptado${todayCount !== 1 ? "s" : ""}`}
           accent="var(--dash-orange)"
           accentSoft="var(--dash-orange-soft)"
           icon={<IconRevenue />}
@@ -109,7 +114,7 @@ export default async function DashboardPage() {
         <MetricCard
           label="Entregados"
           value={String(todayDelivered)}
-          sub={`de ${todayCount} hoy`}
+          sub={`de ${todayCount} aceptados`}
           accent="var(--dash-green)"
           accentSoft="var(--dash-green-soft)"
           icon={<IconCheck />}
