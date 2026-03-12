@@ -86,6 +86,15 @@ export function CheckoutClient({ tenant }: Props) {
     () => activeZones.find(z => z.id === selectedZoneId) ?? null,
     [activeZones, selectedZoneId]
   );
+  const mapInitialQuery = useMemo(() => {
+    const parts = [
+      tenant.address,
+      tenant.city?.name,
+      tenant.state?.name,
+      "México",
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : undefined;
+  }, [tenant.address, tenant.city?.name, tenant.state?.name]);
 
   // zone.cost es Decimal de Prisma — tras JSON.stringify/parse llega como string o number
   const deliveryCost = deliveryType === "PICKUP" ? 0
@@ -427,7 +436,7 @@ export function CheckoutClient({ tenant }: Props) {
               {/* ── Por mapa ── */}
               {useMapDelivery && (
                 <>
-                  <MapPicker onPick={handleMapPick} />
+                  <MapPicker onPick={handleMapPick} initialQuery={mapInitialQuery} />
                   <Field label="Confirma tu dirección" required>
                     <input
                       type="text" value={address} onChange={e => setAddress(e.target.value)}

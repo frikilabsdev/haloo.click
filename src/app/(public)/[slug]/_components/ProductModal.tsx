@@ -39,6 +39,7 @@ export function ProductModal({ product, onClose }: Props) {
   }
 
   function toggleOption(groupId: string, optionId: string, multiple: boolean, max: number | null) {
+    setError(null);
     setSelections(prev => {
       const current = prev[groupId] ?? [];
       if (multiple) {
@@ -128,10 +129,11 @@ export function ProductModal({ product, onClose }: Props) {
     for (const g of visibleGroups()) {
       const count = selections[g.id]?.length ?? 0;
       if (count < g.min) {
+        const groupLabel = normalizeCustomizationLabel(g.name);
         setError(
           g.min === 1
-            ? `Selecciona al menos una opción en "${g.name}"`
-            : `Selecciona al menos ${g.min} opciones en "${g.name}"`
+            ? `Selecciona al menos una opción en "${groupLabel}"`
+            : `Selecciona al menos ${g.min} opciones en "${groupLabel}"`
         );
         return;
       }
@@ -268,7 +270,10 @@ export function ProductModal({ product, onClose }: Props) {
                 {product.variants.map(variant => {
                   const isSelected = selectedVariantId === variant.id;
                   return (
-                    <button key={variant.id} onClick={() => setSelectedVariantId(isSelected ? null : variant.id)}
+                    <button key={variant.id} onClick={() => {
+                      setError(null);
+                      setSelectedVariantId(isSelected ? null : variant.id);
+                    }}
                       style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "12px 14px", borderRadius: 12, cursor: "pointer",
@@ -385,15 +390,25 @@ export function ProductModal({ product, onClose }: Props) {
             </div>
           )}
 
-          {error && (
-            <div style={{ background: "#FEE2E2", border: "1px solid #FECACA", borderRadius: 8, padding: "10px 14px", marginBottom: 16, fontSize: 13, color: "#DC2626", fontFamily: "var(--font-nunito)" }}>
-              {error}
-            </div>
-          )}
         </div>
 
         {/* Footer sticky */}
         <div style={{ padding: "16px 20px", borderTop: "1px solid var(--menu-border)", background: "var(--menu-bg)", flexShrink: 0 }}>
+          {error && (
+            <div style={{
+              background: "#FEE2E2",
+              border: "1px solid #FECACA",
+              borderRadius: 10,
+              padding: "10px 12px",
+              marginBottom: 12,
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#B91C1C",
+              fontFamily: "var(--font-nunito)",
+            }}>
+              {error}
+            </div>
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 0, border: "1px solid var(--menu-border)", borderRadius: 100, overflow: "hidden" }}>
               <button onClick={() => setQuantity(q => Math.max(1, q - 1))}

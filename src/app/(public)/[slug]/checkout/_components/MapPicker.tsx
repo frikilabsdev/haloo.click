@@ -35,6 +35,7 @@ export interface PickResult {
 
 interface Props {
   onPick: (r: PickResult) => void;
+  initialQuery?: string;
 }
 
 // ── Coordenadas por defecto: CDMX ─────────────────────────────────────────────
@@ -81,11 +82,12 @@ function DraggableMarker({
 
 // ── Componente principal ───────────────────────────────────────────────────────
 
-export function MapPicker({ onPick }: Props) {
+export function MapPicker({ onPick, initialQuery }: Props) {
   const [pos,          setPos]          = useState<[number, number]>(DEFAULT_CENTER);
   const [flyTarget,    setFlyTarget]    = useState<[number, number] | null>(null);
   const [geocoding,    setGeocoding]    = useState(false);
   const [locating,     setLocating]     = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(false);
   const [displayAddr,  setDisplayAddr]  = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -120,6 +122,67 @@ export function MapPicker({ onPick }: Props) {
     }
   }, [onPick]);
 
+  // ── Centrar mapa inicialmente cerca del restaurante (si hay ubicación) ─────
+  useEffect(() => {
+    const query = initialQuery?.trim();
+    if (!query) return;
+
+    let cancelled = false;
+    const cacheKey = `haloo_restaurant_center_${query.toLowerCase()}`;
+
+    const resolveInitialCenter = async () => {
+      setBootstrapping(true);
+
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached) as { lat?: number; lng?: number };
+          if (typeof parsed.lat === "number" && typeof parsed.lng === "number") {
+            const target: [number, number] = [parsed.lat, parsed.lng];
+            if (!cancelled) {
+              setPos(target);
+              setFlyTarget(target);
+              reverseGeocode(parsed.lat, parsed.lng);
+            }
+            return;
+          }
+        }
+      } catch {
+        // Ignorar errores de cache y continuar con geocodificación
+      }
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&accept-language=es`
+        );
+        const data = await res.json();
+        const first = Array.isArray(data) ? data[0] : null;
+        const lat = first ? Number(first.lat) : NaN;
+        const lng = first ? Number(first.lon) : NaN;
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) || cancelled) return;
+
+        const target: [number, number] = [lat, lng];
+        setPos(target);
+        setFlyTarget(target);
+        reverseGeocode(lat, lng);
+
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ lat, lng }));
+        } catch {
+          // Ignorar errores de localStorage
+        }
+      } catch {
+        // Si falla Nominatim, mantener centro por defecto
+      } finally {
+        if (!cancelled) setBootstrapping(false);
+      }
+    };
+
+    resolveInitialCenter();
+    return () => { cancelled = true; };
+  }, [initialQuery, reverseGeocode]);
+
   // ── Mover marcador ────────────────────────────────────────────────────────
 
   const handleMove = useCallback((lat: number, lng: number) => {
@@ -151,6 +214,12 @@ export function MapPicker({ onPick }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <style>{`
+        @keyframes locatePulse {
+          0%, 100% { box-shadow: 0 6px 16px rgba(244,114,30,0.35); transform: translateY(0); }
+          50% { box-shadow: 0 10px 24px rgba(220,38,38,0.45); transform: translateY(-1px); }
+        }
+      `}</style>
 
       {/* Mapa */}
       <div style={{
@@ -181,27 +250,35 @@ export function MapPicker({ onPick }: Props) {
           disabled={locating}
           style={{
             position: "absolute", top: 10, right: 10, zIndex: 1000,
-            display: "flex", alignItems: "center", gap: 5,
-            padding: "7px 11px", borderRadius: 8,
-            background: "#fff", border: "1.5px solid #e5e7eb",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-            fontFamily: "var(--font-dm)", fontSize: 12, fontWeight: 600,
-            color: "#111827", cursor: locating ? "not-allowed" : "pointer",
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "9px 13px", borderRadius: 10,
+            background: locating
+              ? "#9CA3AF"
+              : "linear-gradient(135deg, #F97316 0%, #DC2626 100%)",
+            border: "2px solid rgba(255,255,255,0.92)",
+            boxShadow: locating
+              ? "0 4px 12px rgba(0,0,0,0.2)"
+              : "0 8px 22px rgba(220,38,38,0.35)",
+            fontFamily: "var(--font-dm)", fontSize: 12, fontWeight: 800,
+            color: "#fff", cursor: locating ? "not-allowed" : "pointer",
             opacity: locating ? 0.7 : 1,
-            transition: "opacity 0.15s",
+            transition: "all 0.15s",
+            animation: locating ? "none" : "locatePulse 1.8s ease-in-out infinite",
           }}
         >
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="8" cy="8" r="3" />
             <path d="M8 1v2M8 13v2M1 8h2M13 8h2" />
           </svg>
-          {locating ? "Buscando…" : "Mi ubicación"}
+          {locating ? "Buscando…" : "Usar mi ubicación"}
         </button>
       </div>
 
       {/* Hint */}
       <p style={{ fontFamily: "var(--font-dm)", fontSize: 11, color: "var(--menu-muted)", margin: 0, lineHeight: 1.4 }}>
-        {!hasInteracted
+        {bootstrapping
+          ? "Centrando mapa cerca del restaurante…"
+          : !hasInteracted
           ? "Toca el mapa o usa \"Mi ubicación\" para colocar el pin en tu domicilio."
           : geocoding
             ? "Obteniendo dirección…"
