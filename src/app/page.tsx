@@ -488,7 +488,7 @@ export default function LandingPage() {
             </div>
             <div className="hero-divider" />
             <div className="hero-stat">
-              <span className="hero-stat-num">$200</span>
+              <span className="hero-stat-num">$299</span>
               <span className="hero-stat-label">Pesos al mes</span>
             </div>
             <div className="hero-divider" />
@@ -659,7 +659,7 @@ export default function LandingPage() {
       {/* ── CTA Banner ───────────────────────────────────── */}
       <div className="cta-banner">
         <h2 className="cta-banner-title">
-          Empieza hoy.<br />Solo $200 al mes.
+          Empieza hoy.<br />Solo $299 al mes.
         </h2>
         <p className="cta-banner-sub">
           Sin comisiones por pedido, sin contratos. Crea tu menú digital y comienza a recibir pedidos por WhatsApp desde hoy mismo.
