@@ -30,8 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+# sí incluir el ejemplo de variables (sin valores reales)
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +45,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+prisma.config.ts
+
+# herramientas internas de desarrollo
+/.agent/
+/.agents/
+/.claude/
+/skills/
+skills-lock.json
+
+# archivos internos de referencia y auditoría
+AUDITORIA_TECNICA_PREPRODUCCION.md
+CLEANUP_LOG.md
+
+# imágenes de referencia de diseño (no son assets de la app)
+/public/cabecera.png
+/public/error-tarjetas.png
+/public/error1.png
+/public/menu-pc.png
+/public/menu.jpg
+/public/paletacolor.jpg
+
+# uploads locales
+/public/uploads/

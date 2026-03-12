@@ -1,26 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Auth palette */
+  --ember-bg:       #0C0B09;
+  --ember-card:     #161512;
+  --ember-border:   #2A2620;
+  --ember-orange:   #F4721E;
+  --ember-gold:     #F5B944;
+  --ember-text:     #F0EBE3;
+  --ember-muted:    #7A6F63;
+
+  /* Menu palette — iOS Food App inspired */
+  --menu-bg:          #F5F6FA;
+  --menu-primary:     #1C1C1E;
+  --menu-accent:      #E8312A;
+  --menu-accent-soft: #FEF0EF;
+  --menu-gold:        #FF9500;
+  --menu-card:        #FFFFFF;
+  --menu-border:      #ECEEF2;
+  --menu-muted:       #8E8E93;
+  --menu-shadow:      0 2px 12px rgba(0,0,0,0.07);
+  --menu-shadow-lg:   0 8px 32px rgba(0,0,0,0.12);
+
+  --font-syne:     'Syne', sans-serif;
+  --font-lora:     'Lora', serif;
+  --font-fraunces: 'Fraunces', serif;
+  --font-dm:       'DM Sans', sans-serif;
+  --font-jakarta:  'Plus Jakarta Sans', sans-serif;
+  --font-nunito:   'Nunito', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-dm);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Grain overlay utility */
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: -200%;
+  width: 400%;
+  height: 400%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 180px;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 9999;
+  animation: grain-shift 8s steps(10) infinite;
+}
+
+@keyframes grain-shift {
+  0%, 100% { transform: translate(0, 0); }
+  10%       { transform: translate(-5%, -5%); }
+  20%       { transform: translate(-10%, 5%); }
+  30%       { transform: translate(5%, -10%); }
+  40%       { transform: translate(-5%, 15%); }
+  50%       { transform: translate(-10%, 5%); }
+  60%       { transform: translate(15%, 0); }
+  70%       { transform: translate(0, 10%); }
+  80%       { transform: translate(-15%, 0); }
+  90%       { transform: translate(10%, 5%); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ember-border); border-radius: 2px; }
+
+/* Cover — border radius solo en desktop */
+.menu-cover {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #1C1C1E;
+}
+@media (min-width: 768px) {
+  .menu-cover {
+    border-radius: 0 0 20px 20px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Logo del restaurante — centrado en móvil */
+.menu-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--menu-card);
+  border: 3px solid var(--menu-card);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  overflow: hidden;
+  margin-top: -36px;
+  margin-bottom: 12px;
+}
+@media (max-width: 767px) {
+  .menu-logo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .menu-info {
+    text-align: center;
+  }
+  .menu-info .menu-meta {
+    justify-content: center;
+  }
+}
+
+/* Menú público — grid de productos */
+.menu-product-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* Imagen de producto */
+.menu-product-img {
+  width: 100px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.menu-product-grid > button {
+  height: 100px;
+}
+
+@media (min-width: 680px) {
+  .menu-product-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .menu-product-img {
+    width: 120px;
+  }
+
+  .menu-product-grid > button {
+    height: 120px;
+  }
+}
+
+/* Category chip nav */
+.menu-cat-chip {
+  flex-shrink: 0;
+  padding: 14px 14px;
+  min-height: 44px; /* touch target cómodo */
+  border-radius: 0;
+  font-family: var(--font-nunito);
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.01em;
+  outline: none;
+}
+.menu-cat-chip.active {
+  background: transparent;
+  color: var(--menu-accent);
+  box-shadow: none;
+  border-bottom: 2.5px solid var(--menu-accent);
+  border-radius: 0;
+  padding-bottom: 6px;
+}
+.menu-cat-chip:not(.active) {
+  background: transparent;
+  color: var(--menu-muted);
+  box-shadow: none;
+  border-bottom: 2.5px solid transparent;
+  border-radius: 0;
+  padding-bottom: 6px;
+}
+.menu-cat-chip:not(.active):hover {
+  color: var(--menu-primary);
+}
+
+/* Animaciones del menú */
+@keyframes menuFadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.menu-section-appear {
+  animation: menuFadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Cart FAB pulse */
+@keyframes cartFabPop {
+  0%   { transform: translateX(-50%) scale(0.85); opacity: 0; }
+  70%  { transform: translateX(-50%) scale(1.04); }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+@keyframes badgePop {
+  0%   { transform: scale(0.6); }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
