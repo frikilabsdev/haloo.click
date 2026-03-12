@@ -127,14 +127,28 @@ body {
 
 /* Imagen de producto */
 .menu-product-img {
-  width: 100px;
+  width: 104px;
   flex-shrink: 0;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .menu-product-grid > button {
-  height: 100px;
+  height: 112px;
+}
+
+.menu-product-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.menu-product-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
 }
 
 @media (min-width: 680px) {
@@ -149,6 +163,10 @@ body {
 
   .menu-product-grid > button {
     height: 120px;
+  }
+
+  .menu-product-desc {
+    -webkit-line-clamp: 2;
   }
 }
 

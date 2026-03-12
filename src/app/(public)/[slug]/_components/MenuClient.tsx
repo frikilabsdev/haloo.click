@@ -455,11 +455,10 @@ function ProductCard({ product, onClick }: { product: ProductWithOptions; onClic
         {/* Nombre + badge */}
         <div style={{ overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6, marginBottom: 3 }}>
-            <h3 style={{
+            <h3 className="menu-product-name" style={{
               fontFamily: "var(--font-nunito)", fontWeight: 800, fontSize: 14,
               color: product.isAvailable ? "var(--menu-primary)" : "var(--menu-muted)",
               margin: 0, lineHeight: 1.25,
-              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
             }}>
               {product.name}
             </h3>
@@ -474,10 +473,9 @@ function ProductCard({ product, onClick }: { product: ProductWithOptions; onClic
             )}
           </div>
           {product.description && (
-            <p style={{
+            <p className="menu-product-desc" style={{
               fontFamily: "var(--font-nunito)", fontWeight: 500, fontSize: 11,
               color: "var(--menu-muted)", margin: 0, lineHeight: 1.4,
-              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
             }}>
               {product.description}
             </p>
