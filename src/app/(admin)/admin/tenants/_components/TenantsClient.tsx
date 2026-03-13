@@ -17,6 +17,10 @@ interface TenantRow {
   _count:         { orders: number; products: number };
 }
 
+type TenantFilter = "ALL" | "PENDING" | "ACTIVE" | "SUSPENDED";
+
+const FILTERS: TenantFilter[] = ["ALL", "PENDING", "ACTIVE", "SUSPENDED"];
+
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
   PENDING:   { bg: "#FEF3C7", color: "#92400E", label: "Pendiente"  },
   ACTIVE:    { bg: "#D1FAE5", color: "#065F46", label: "Activo"     },
@@ -28,10 +32,87 @@ const PLAN_STYLE: Record<string, { bg: string; color: string }> = {
   PRO:   { bg: "#EDE9FE", color: "#5B21B6" },
 };
 
+const tenantsResponsiveCss = `
+  .tenants-toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .tenant-filters {
+    display: flex;
+    gap: 6px;
+  }
+
+  .tenants-desktop-table {
+    display: block;
+  }
+
+  .tenants-mobile-list {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .tenants-toolbar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .tenants-search {
+      width: 100% !important;
+      min-height: 44px;
+      font-size: 16px !important;
+    }
+
+    .tenant-filters {
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tenant-filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tenant-filter-btn {
+      white-space: nowrap;
+      min-height: 40px;
+      padding: 0 14px !important;
+      font-size: 13px !important;
+    }
+
+    .tenants-desktop-table {
+      display: none;
+    }
+
+    .tenants-mobile-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tenant-actions-wrap {
+      gap: 8px !important;
+    }
+
+    .tenant-actions-wrap > button,
+    .tenant-actions-wrap > a {
+      min-height: 38px;
+      padding-top: 9px !important;
+      padding-bottom: 9px !important;
+    }
+  }
+`;
+
 export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] }) {
   const [tenants, setTenants] = useState<TenantRow[]>(initialTenants);
   const [search, setSearch]   = useState("");
-  const [filter, setFilter]   = useState<string>("ALL");
+  const [filter, setFilter]   = useState<TenantFilter>("ALL");
   const [loading,  setLoading]  = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
@@ -78,8 +159,67 @@ export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] 
     SUSPENDED: tenants.filter(t => t.status === "SUSPENDED").length,
   };
 
+  function renderActions(t: TenantRow, isLoading: boolean) {
+    return (
+      <div className="tenant-actions-wrap" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {t.status === "PENDING" && (
+          <button
+            onClick={() => patch(t.id, { status: "ACTIVE" })}
+            disabled={isLoading}
+            style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "#059669", color: "#fff", opacity: isLoading ? 0.6 : 1 }}>
+            Aprobar
+          </button>
+        )}
+        {t.status === "ACTIVE" && (
+          <button
+            onClick={() => { if (confirm(`¿Suspender ${t.name}?`)) patch(t.id, { status: "SUSPENDED" }); }}
+            disabled={isLoading}
+            style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "#DC2626", color: "#fff", opacity: isLoading ? 0.6 : 1 }}>
+            Suspender
+          </button>
+        )}
+        {t.status === "SUSPENDED" && (
+          <button
+            onClick={() => patch(t.id, { status: "ACTIVE" })}
+            disabled={isLoading}
+            style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "#2563EB", color: "#fff", opacity: isLoading ? 0.6 : 1 }}>
+            Reactivar
+          </button>
+        )}
+        {t.plan === "BASIC" && (
+          <button
+            onClick={() => patch(t.id, { plan: "PRO" })}
+            disabled={isLoading}
+            style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #7C3AED", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "transparent", color: "#A78BFA", opacity: isLoading ? 0.6 : 1 }}>
+            → PRO
+          </button>
+        )}
+        {t.plan === "PRO" && (
+          <button
+            onClick={() => patch(t.id, { plan: "BASIC" })}
+            disabled={isLoading}
+            style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #334155", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "transparent", color: "#64748B", opacity: isLoading ? 0.6 : 1 }}>
+            → BASIC
+          </button>
+        )}
+        <a href={`/${t.slug}`} target="_blank" rel="noopener noreferrer"
+          style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #334155", fontSize: 12, fontWeight: 600, background: "transparent", color: "#94A3B8", textDecoration: "none" }}>
+          Ver menú
+        </a>
+        <button
+          onClick={() => destroy(t.id, t.name)}
+          disabled={deleting === t.id || isLoading}
+          title="Eliminar permanentemente"
+          style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(220,38,38,0.4)", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "rgba(220,38,38,0.08)", color: "#F87171", opacity: (deleting === t.id || isLoading) ? 0.5 : 1 }}>
+          {deleting === t.id ? "..." : "Eliminar"}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
+      <style>{tenantsResponsiveCss}</style>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: 24, color: "#F8FAFC", margin: "0 0 4px" }}>
@@ -91,8 +231,9 @@ export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] 
       </div>
 
       {/* Filters + search */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+      <div className="tenants-toolbar">
         <input
+          className="tenants-search"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nombre, slug o email..."
@@ -103,9 +244,9 @@ export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] 
             fontFamily: "var(--font-dm)", outline: "none",
           }}
         />
-        <div style={{ display: "flex", gap: 6 }}>
-          {(["ALL", "PENDING", "ACTIVE", "SUSPENDED"] as const).map(s => (
-            <button key={s} onClick={() => setFilter(s)}
+        <div className="tenant-filters">
+          {FILTERS.map(s => (
+            <button key={s} className="tenant-filter-btn" onClick={() => setFilter(s)}
               style={{
                 padding: "8px 14px", borderRadius: 8, border: "none", cursor: "pointer",
                 fontFamily: "var(--font-dm)", fontSize: 12, fontWeight: 600,
@@ -118,14 +259,13 @@ export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] 
         </div>
       </div>
 
-      {/* Table */}
-      <div style={{ background: "#1E293B", borderRadius: 14, border: "1px solid #334155", overflow: "hidden" }}>
+      <div style={{ background: "#1E293B", borderRadius: 14, border: "1px solid #334155", overflow: "hidden", marginBottom: 10 }}>
         {filtered.length === 0 ? (
           <p style={{ textAlign: "center", padding: "48px 0", color: "#475569", fontSize: 14 }}>
             Sin resultados
           </p>
         ) : (
-          <div style={{ overflowX: "auto" }}>
+          <div className="tenants-desktop-table" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #334155" }}>
@@ -179,59 +319,7 @@ export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] 
                       <td style={{ padding: "14px 16px", fontSize: 14, color: "#94A3B8", fontWeight: 600 }}>{t._count.products}</td>
                       {/* Actions */}
                       <td style={{ padding: "14px 16px" }}>
-                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                          {t.status === "PENDING" && (
-                            <button
-                              onClick={() => patch(t.id, { status: "ACTIVE" })}
-                              disabled={isLoading}
-                              style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "#059669", color: "#fff", opacity: isLoading ? 0.6 : 1 }}>
-                              Aprobar
-                            </button>
-                          )}
-                          {t.status === "ACTIVE" && (
-                            <button
-                              onClick={() => { if (confirm(`¿Suspender ${t.name}?`)) patch(t.id, { status: "SUSPENDED" }); }}
-                              disabled={isLoading}
-                              style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "#DC2626", color: "#fff", opacity: isLoading ? 0.6 : 1 }}>
-                              Suspender
-                            </button>
-                          )}
-                          {t.status === "SUSPENDED" && (
-                            <button
-                              onClick={() => patch(t.id, { status: "ACTIVE" })}
-                              disabled={isLoading}
-                              style={{ padding: "6px 12px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "#2563EB", color: "#fff", opacity: isLoading ? 0.6 : 1 }}>
-                              Reactivar
-                            </button>
-                          )}
-                          {t.plan === "BASIC" && (
-                            <button
-                              onClick={() => patch(t.id, { plan: "PRO" })}
-                              disabled={isLoading}
-                              style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #7C3AED", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "transparent", color: "#A78BFA", opacity: isLoading ? 0.6 : 1 }}>
-                              → PRO
-                            </button>
-                          )}
-                          {t.plan === "PRO" && (
-                            <button
-                              onClick={() => patch(t.id, { plan: "BASIC" })}
-                              disabled={isLoading}
-                              style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #334155", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "transparent", color: "#64748B", opacity: isLoading ? 0.6 : 1 }}>
-                              → BASIC
-                            </button>
-                          )}
-                          <a href={`/${t.slug}`} target="_blank" rel="noopener noreferrer"
-                            style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #334155", fontSize: 12, fontWeight: 600, background: "transparent", color: "#94A3B8", textDecoration: "none" }}>
-                            Ver menú
-                          </a>
-                          <button
-                            onClick={() => destroy(t.id, t.name)}
-                            disabled={deleting === t.id || isLoading}
-                            title="Eliminar permanentemente"
-                            style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid rgba(220,38,38,0.4)", cursor: "pointer", fontSize: 12, fontWeight: 700, background: "rgba(220,38,38,0.08)", color: "#F87171", opacity: (deleting === t.id || isLoading) ? 0.5 : 1 }}>
-                            {deleting === t.id ? "..." : "Eliminar"}
-                          </button>
-                        </div>
+                        {renderActions(t, isLoading)}
                       </td>
                     </tr>
                   );
@@ -241,6 +329,78 @@ export function TenantsClient({ initialTenants }: { initialTenants: TenantRow[] 
           </div>
         )}
       </div>
+
+      {filtered.length > 0 && (
+        <div className="tenants-mobile-list">
+          {filtered.map(t => {
+            const owner = t.users[0]?.user;
+            const statusStyle = STATUS_STYLE[t.status];
+            const planStyle = PLAN_STYLE[t.plan];
+            const isLoading = loading === t.id;
+            return (
+              <article key={t.id} style={{
+                background: "#1E293B",
+                border: "1px solid #334155",
+                borderRadius: 14,
+                padding: 14,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontFamily: "var(--font-dm)", fontWeight: 700, fontSize: 15, color: "#F8FAFC", margin: 0, lineHeight: 1.2 }}>
+                      {t.name}
+                    </p>
+                    <p style={{ fontSize: 12, color: "#64748B", margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      /{t.slug}
+                    </p>
+                  </div>
+                  <span style={{ padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: statusStyle.bg, color: statusStyle.color, flexShrink: 0 }}>
+                    {statusStyle.label}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                  <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: planStyle.bg, color: planStyle.color }}>
+                    {t.plan}
+                  </span>
+                  {t.city?.name && (
+                    <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: "rgba(148,163,184,0.16)", color: "#CBD5E1" }}>
+                      {t.city.name}{t.state?.name ? `, ${t.state.name}` : ""}
+                    </span>
+                  )}
+                  {t.type && (
+                    <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: "rgba(37,99,235,0.14)", color: "#93C5FD" }}>
+                      {t.type}
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 8, marginBottom: 10 }}>
+                  <div style={{ background: "#0F172A", border: "1px solid #334155", borderRadius: 9, padding: "8px 10px" }}>
+                    <p style={{ margin: 0, color: "#64748B", fontSize: 11 }}>Pedidos</p>
+                    <p style={{ margin: "2px 0 0", color: "#E2E8F0", fontSize: 16, fontWeight: 700 }}>{t._count.orders}</p>
+                  </div>
+                  <div style={{ background: "#0F172A", border: "1px solid #334155", borderRadius: 9, padding: "8px 10px" }}>
+                    <p style={{ margin: 0, color: "#64748B", fontSize: 11 }}>Productos</p>
+                    <p style={{ margin: "2px 0 0", color: "#E2E8F0", fontSize: 16, fontWeight: 700 }}>{t._count.products}</p>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 10 }}>
+                  <p style={{ margin: 0, color: "#94A3B8", fontSize: 12 }}>
+                    {owner?.email ?? "Sin email"}
+                  </p>
+                  {owner?.name && <p style={{ margin: "2px 0 0", color: "#64748B", fontSize: 11 }}>{owner.name}</p>}
+                  <p style={{ margin: "2px 0 0", color: "#475569", fontSize: 11 }}>
+                    Alta: {new Date(t.createdAt).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
+                  </p>
+                </div>
+
+                {renderActions(t, isLoading)}
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

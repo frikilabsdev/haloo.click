@@ -15,6 +15,7 @@ export default async function TenantsPage() {
       name:           true,
       type:           true,
       city:           true,
+      state:          true,
       status:         true,
       plan:           true,
       whatsappNumber: true,

@@ -119,6 +119,35 @@ export function DashboardShell({ tenant, isAdmin = false, children }: Props) {
           transform: scale(1.08);
         }
 
+        .dash-mobile-header {
+          display: none;
+        }
+
+        .dash-mobile-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          min-height: 36px;
+          border-radius: 10px;
+          border: 1px solid var(--dash-border);
+          background: #fff;
+          color: var(--dash-text);
+          padding: 0 11px;
+          font-family: var(--font-nunito);
+          font-size: 11px;
+          font-weight: 800;
+          text-decoration: none;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .dash-mobile-btn.logout {
+          color: #B42318;
+          border-color: rgba(180,35,24,0.25);
+          background: #FFF5F4;
+        }
+
         /* ── Responsive layout ─────────────────────── */
         .dash-main {
           flex: 1; padding: 24px 20px;
@@ -129,6 +158,19 @@ export function DashboardShell({ tenant, isAdmin = false, children }: Props) {
           .dash-bottom-nav { display: flex; }
           .dash-sidebar    { display: none !important; }
           .dash-top-bar    { display: none !important; }
+          .dash-mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 31;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--dash-border);
+          }
           .dash-main {
             padding: 16px 14px;
             padding-bottom: calc(var(--dash-bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 20px);
@@ -215,6 +257,32 @@ export function DashboardShell({ tenant, isAdmin = false, children }: Props) {
             <IconLink size={12} />
             Ver menú
           </Link>
+        </header>
+
+        <header className="dash-mobile-header">
+          <button className="dash-mobile-btn" onClick={() => setDrawerOpen(true)} type="button">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <path d="M2 4h12M2 8h12M2 12h12" />
+            </svg>
+            Panel
+          </button>
+          <div style={{ minWidth: 0, textAlign: "center", flex: 1, padding: "0 4px" }}>
+            <p style={{ margin: 0, color: "var(--dash-text)", fontFamily: "var(--font-nunito)", fontSize: 12, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {tenant.name}
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            <Link href={`/${tenant.slug}`} target="_blank" className="dash-mobile-btn" aria-label="Ver menú público">
+              Menú
+            </Link>
+            <button
+              type="button"
+              className="dash-mobile-btn logout"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+            >
+              Salir
+            </button>
+          </div>
         </header>
 
         <main className="dash-main">{children}</main>
@@ -328,7 +396,7 @@ function SidebarContent({
         <p className="sidebar-section-label" style={{ fontFamily: "var(--font-nunito)", fontSize: 10, fontWeight: 800, color: "var(--dash-muted)", letterSpacing: "0.12em", textTransform: "uppercase", padding: "18px 14px 4px", margin: 0 }}>
           Público
         </p>
-        <Link href={`/${tenant.slug}`} target="_blank" className="dash-nav-item">
+        <Link href={`/${tenant.slug}`} target="_blank" onClick={onNav} className="dash-nav-item">
           <IconLink size={16} />
           <span className="sidebar-label">Ver menú</span>
         </Link>
