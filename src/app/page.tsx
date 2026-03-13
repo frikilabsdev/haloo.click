@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+
 
 export default function LandingPage() {
   return (
@@ -59,8 +61,9 @@ export default function LandingPage() {
           animation: fadeIn 0.5s ease both;
         }
         .nav-logo {
-          font-family: var(--font-syne); font-weight: 800; font-size: 22px;
-          color: var(--orange); letter-spacing: -0.02em; text-decoration: none;
+          display: flex;
+          align-items: center;
+          text-decoration: none;
         }
         .nav-actions { display: flex; align-items: center; gap: 10px; }
         .btn-ghost {
@@ -450,7 +453,15 @@ export default function LandingPage() {
 
       {/* ── Nav ─────────────────────────────────────────── */}
       <nav className="nav">
-        <Link href="/" className="nav-logo">haloo</Link>
+        <Link href="/" className="nav-logo">
+          <Image 
+            src="/logo_haloo.svg" 
+            alt="Haloo Logo" 
+            width={120} 
+            height={40} 
+            priority
+          />
+        </Link>
         <div className="nav-actions">
           <Link href="/login" className="btn-ghost">Iniciar sesión</Link>
           <Link href="/register" className="btn-primary">Registrar restaurante</Link>
