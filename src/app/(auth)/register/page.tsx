@@ -23,13 +23,108 @@ const INPUT_BASE: React.CSSProperties = {
   width: "100%",
   background: "transparent",
   border: "none",
-  padding: "12px 0",
+  padding: "14px 0",
   fontFamily: "var(--font-lora)",
   fontSize: 16,
   color: "var(--ember-text)",
   outline: "none",
   transition: "border-color 0.2s",
 };
+
+const registerResponsiveCss = `
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .reg-step {
+    animation: slideIn 0.28s ease;
+  }
+
+  select option {
+    background: #1a1512;
+    color: #f0ebe3;
+  }
+
+  .reg-shell,
+  .reg-success-shell {
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  .reg-shell {
+    padding: 40px 24px;
+  }
+
+  .reg-card {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .reg-brand {
+    margin-bottom: 44px;
+  }
+
+  .reg-header {
+    margin-bottom: 36px;
+  }
+
+  .reg-step-title {
+    font-size: 24px;
+  }
+
+  .reg-cta-stack {
+    display: flex;
+    gap: 12px;
+  }
+
+  .reg-success-shell {
+    padding: 24px;
+  }
+
+  .reg-success-card {
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .reg-shell,
+    .reg-success-shell {
+      align-items: flex-start !important;
+      justify-content: center;
+      padding: calc(18px + env(safe-area-inset-top)) 16px
+        calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .reg-card,
+    .reg-success-card {
+      max-width: 560px !important;
+    }
+
+    .reg-brand {
+      margin-bottom: 28px;
+    }
+
+    .reg-header {
+      margin-bottom: 28px;
+    }
+
+    .reg-step-title {
+      font-size: clamp(1.35rem, 6vw, 1.6rem) !important;
+    }
+
+    .reg-cta-stack {
+      flex-direction: column;
+    }
+  }
+`;
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
 
@@ -107,6 +202,7 @@ function Btn({
       style={{
         width: "100%",
         padding: "15px",
+        minHeight: 50,
         background: loading ? "var(--ember-border)" : "linear-gradient(135deg, #F4721E 0%, #E05A10 100%)",
         border: "none",
         borderRadius: 10,
@@ -118,6 +214,7 @@ function Btn({
         cursor: loading ? "not-allowed" : "pointer",
         transition: "all 0.2s",
         boxShadow: loading ? "none" : "0 4px 24px rgba(244,114,30,0.35)",
+        touchAction: "manipulation",
         ...style,
       }}
     >
@@ -252,8 +349,9 @@ export default function RegisterPage() {
     const waLink = `https://wa.me/529711260809?text=${waMsg}`;
 
     return (
-      <div className="grain" style={{ minHeight: "100vh", background: "var(--ember-bg)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <div style={{ textAlign: "center", maxWidth: 440 }}>
+      <div className="grain reg-success-shell" style={{ background: "var(--ember-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <style>{registerResponsiveCss}</style>
+        <div className="reg-success-card">
           <div style={{
             width: 72, height: 72, borderRadius: "50%",
             background: "linear-gradient(135deg, #F4721E, #E05A10)",
@@ -293,11 +391,13 @@ export default function RegisterPage() {
             style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
               width: "100%", padding: "14px 20px",
+              minHeight: 50,
               background: "#25D366", borderRadius: 10,
               fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: 14,
               color: "#fff", textDecoration: "none",
               boxShadow: "0 4px 20px rgba(37,211,102,0.35)",
               marginBottom: 12,
+              touchAction: "manipulation",
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -310,6 +410,7 @@ export default function RegisterPage() {
           <Link href="/login" style={{
             display: "block", fontFamily: "var(--font-dm)", fontSize: 13,
             color: "var(--ember-muted)", textDecoration: "none",
+            padding: "8px 0",
           }}>
             Ya tengo activación → Iniciar sesión
           </Link>
@@ -319,23 +420,19 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="grain" style={{ minHeight: "100vh", background: "var(--ember-bg)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-      <style>{`
-        @keyframes slideIn { from { opacity:0; transform:translateX(-14px) } to { opacity:1; transform:translateX(0) } }
-        .reg-step { animation: slideIn 0.28s ease; }
-        select option { background: #1A1512; color: #F0EBE3; }
-      `}</style>
+    <div className="grain reg-shell" style={{ background: "var(--ember-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{registerResponsiveCss}</style>
 
-      <div style={{ width: "100%", maxWidth: 460 }}>
+      <div className="reg-card">
 
         {/* Brand */}
-        <div style={{ fontFamily: "var(--font-syne)", fontWeight: 800, fontSize: 24, color: "var(--ember-text)", marginBottom: 44, display: "flex", alignItems: "center", gap: 8 }}>
+        <div className="reg-brand" style={{ fontFamily: "var(--font-syne)", fontWeight: 800, fontSize: 24, color: "var(--ember-text)", display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: "var(--ember-orange)", boxShadow: "0 0 12px var(--ember-orange)" }} />
           Haloo
         </div>
 
         {/* Step bar */}
-        <div style={{ marginBottom: 36 }}>
+        <div className="reg-header">
           <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
             {[1, 2].map(s => (
               <div key={s} style={{
@@ -345,8 +442,8 @@ export default function RegisterPage() {
               }} />
             ))}
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-            <span style={{ fontFamily: "var(--font-syne)", fontWeight: 700, fontSize: 24, color: "var(--ember-text)", letterSpacing: "-0.02em" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+            <span className="reg-step-title" style={{ fontFamily: "var(--font-syne)", fontWeight: 700, color: "var(--ember-text)", letterSpacing: "-0.02em" }}>
               {step === 1 ? "Crea tu cuenta" : "Tu restaurante"}
             </span>
             <span style={{ fontFamily: "var(--font-dm)", fontSize: 12, color: "var(--ember-muted)" }}>{step} de 2</span>
@@ -425,7 +522,7 @@ export default function RegisterPage() {
                       width: "100%",
                       background: "transparent",
                       border: "none",
-                      padding: "12px 0",
+                      padding: "14px 0",
                       fontFamily: "var(--font-lora)",
                       fontSize: 16,
                       color: form.type ? "var(--ember-text)" : "var(--ember-muted)",
@@ -487,7 +584,7 @@ export default function RegisterPage() {
                       flex: 1,
                       background: "transparent",
                       border: "none",
-                      padding: "12px 6px",
+                      padding: "14px 6px",
                       fontFamily: "var(--font-lora)",
                       fontSize: 15,
                       color: slugStatus === "invalid" ? "#f87171" : "var(--ember-orange)",
@@ -544,13 +641,15 @@ export default function RegisterPage() {
                 {" "}conforme a la LFPDPPP.
               </p>
 
-              <div style={{ display: "flex", gap: 12 }}>
+              <div className="reg-cta-stack">
                 <button
                   type="button"
                   onClick={() => { setStep(1); setError(null); }}
+                  className="reg-back-btn"
                   style={{
                     flex: 1,
                     padding: 15,
+                    minHeight: 48,
                     background: "transparent",
                     border: "1px solid var(--ember-border)",
                     borderRadius: 10,
@@ -559,6 +658,7 @@ export default function RegisterPage() {
                     fontSize: 14,
                     color: "var(--ember-muted)",
                     cursor: "pointer",
+                    touchAction: "manipulation",
                   }}
                 >
                   ← Atrás
@@ -573,7 +673,7 @@ export default function RegisterPage() {
 
         <p style={{ fontFamily: "var(--font-dm)", fontSize: 13, color: "var(--ember-muted)", marginTop: 28, textAlign: "center" }}>
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" style={{ color: "var(--ember-gold)", textDecoration: "none", fontWeight: 500 }}>
+          <Link href="/login" style={{ color: "var(--ember-gold)", textDecoration: "none", fontWeight: 500, display: "inline-block", padding: "8px 0" }}>
             Iniciar sesión
           </Link>
         </p>

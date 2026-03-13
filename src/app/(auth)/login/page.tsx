@@ -5,6 +5,54 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+const loginResponsiveCss = `
+  .auth-shell {
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  .auth-form-panel {
+    padding: 40px 24px;
+  }
+
+  .auth-mobile-brand {
+    margin-bottom: 40px;
+  }
+
+  .auth-title {
+    font-size: 32px;
+  }
+
+  .auth-subtitle {
+    margin: 0 0 44px;
+  }
+
+  @media (max-width: 1023px) {
+    .auth-form-panel {
+      align-items: flex-start !important;
+      padding: calc(20px + env(safe-area-inset-top)) 16px
+        calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .auth-form-card {
+      max-width: 560px !important;
+      margin: 0 auto;
+    }
+
+    .auth-mobile-brand {
+      margin-bottom: 26px;
+    }
+
+    .auth-title {
+      font-size: clamp(1.7rem, 6.5vw, 2rem) !important;
+    }
+
+    .auth-subtitle {
+      margin: 0 0 28px !important;
+    }
+  }
+`;
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,7 +78,7 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ width: "100%" }}>
       {/* Email */}
       <div style={{ marginBottom: 28 }}>
         <label style={{
@@ -56,7 +104,7 @@ function LoginForm() {
             background: "transparent",
             border: "none",
             borderBottom: `1px solid ${email ? "var(--ember-orange)" : "var(--ember-border)"}`,
-            padding: "12px 0",
+            padding: "14px 0",
             fontFamily: "var(--font-lora)",
             fontSize: 16,
             color: "var(--ember-text)",
@@ -93,7 +141,7 @@ function LoginForm() {
             background: "transparent",
             border: "none",
             borderBottom: `1px solid ${password ? "var(--ember-orange)" : "var(--ember-border)"}`,
-            padding: "12px 0",
+            padding: "14px 0",
             fontFamily: "var(--font-lora)",
             fontSize: 16,
             color: "var(--ember-text)",
@@ -109,6 +157,8 @@ function LoginForm() {
             fontSize: 12,
             color: "var(--ember-muted)",
             textDecoration: "none",
+            display: "inline-block",
+            padding: "8px 0",
           }}>
             ¿Olvidaste tu contraseña?
           </Link>
@@ -138,6 +188,7 @@ function LoginForm() {
         style={{
           width: "100%",
           padding: "16px",
+          minHeight: 50,
           background: loading
             ? "var(--ember-border)"
             : "linear-gradient(135deg, #F4721E 0%, #E05A10 100%)",
@@ -151,6 +202,7 @@ function LoginForm() {
           cursor: loading ? "not-allowed" : "pointer",
           transition: "all 0.2s",
           boxShadow: loading ? "none" : "0 4px 24px rgba(244,114,30,0.35)",
+          touchAction: "manipulation",
         }}
       >
         {loading ? "Verificando..." : "Entrar al panel →"}
@@ -161,7 +213,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="grain" style={{ minHeight: "100vh", background: "var(--ember-bg)", display: "flex" }}>
+    <div className="grain auth-shell" style={{ background: "var(--ember-bg)", display: "flex" }}>
+      <style>{loginResponsiveCss}</style>
 
       {/* Panel izquierdo — visual */}
       <div style={{
@@ -252,22 +305,20 @@ export default function LoginPage() {
       </div>
 
       {/* Panel derecho — formulario */}
-      <div style={{
+      <div className="auth-form-panel" style={{
         flex: 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 24px",
         background: "var(--ember-bg)",
       }}>
-        <div style={{ width: "100%", maxWidth: 400 }}>
+        <div className="auth-form-card" style={{ width: "100%", maxWidth: 400 }}>
 
-          <div className="lg:hidden" style={{
+          <div className="lg:hidden auth-mobile-brand" style={{
             fontFamily: "var(--font-syne)",
             fontWeight: 800,
             fontSize: 24,
             color: "var(--ember-text)",
-            marginBottom: 40,
             display: "flex",
             alignItems: "center",
             gap: 8,
@@ -283,21 +334,19 @@ export default function LoginPage() {
             Haloo
           </div>
 
-          <h1 style={{
+          <h1 className="auth-title" style={{
             fontFamily: "var(--font-syne)",
             fontWeight: 700,
-            fontSize: 32,
             color: "var(--ember-text)",
             margin: "0 0 8px",
             letterSpacing: "-0.02em",
           }}>
             Bienvenido de vuelta
           </h1>
-          <p style={{
+          <p className="auth-subtitle" style={{
             fontFamily: "var(--font-dm)",
             fontSize: 14,
             color: "var(--ember-muted)",
-            margin: "0 0 44px",
           }}>
             Accede a tu panel de restaurante
           </p>
